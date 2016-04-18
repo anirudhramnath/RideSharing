@@ -16,10 +16,8 @@ Coursework project for Database Management Systems
 Instructions to compile
 -------------
 
-> **Requirements:**
-> - Python 2.7.10
-
-**Packages required**
+**Requirements:**
+- Python 2.7.10
 
 Make sure you have pip installed in your machine
 
