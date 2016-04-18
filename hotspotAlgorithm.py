@@ -5,7 +5,7 @@ import sys
 from Taxi import Taxi
 import dataFetch
 from haversine import haversine
-from pprint import pprint
+import csv
 
 """ --- Global variables --- """
 
@@ -17,25 +17,26 @@ passenger_list = [] # type - Passenger object list
 
 global_time = None # seed the first request's time here
 
-pool_time = None # seed the pool time here
+pool_time, operation_hours, HOTSPOT = None, None, None # seed the pool time here
 
-results = []
+results = [] # list of merged taxis
 
 """ --- END Global variables --- """
 
 
-def start(hotspot, operation_hours, poolTime):
-    global global_time, passenger_list, taxi_list, pool_time, results
+def start(hotspot, operationHours, poolTime):
+    global global_time, passenger_list, taxi_list, pool_time, operation_hours, results, HOTSPOT
 
     # Step 1 : Fetch passenger data
     loadValues(hotspot, operation_hours)
 
     # Step 2 : Update global and pool time
     global_time = passenger_list[0].pickUpTime
-    pool_time = poolTime
+    pool_time = int(poolTime)
+    operation_hours = operationHours
+    HOTSPOT = hotspot
 
     # Step 3 : Assign users to cabs
-    ##TODO: Distance calculation
     for passenger in passenger_list:
         global_time = passenger.pickUpTime
         assignPassengerToCab(passenger)
@@ -45,7 +46,8 @@ def start(hotspot, operation_hours, poolTime):
         updateResult(taxi)
     taxi_list = []
 
-    print "TOTAL NO OF TRIPS IS", str(len(results))
+    # Step 5 : Output the result summary
+    summarizeResults()
 
 
 def loadValues(hotspot, operation_hours):
@@ -73,24 +75,31 @@ def checkTimeForEachCab():
         del taxi_list[i]
 
 
-def calulateRouteDistance():
-    pass
+def summarizeResults():
+    global results, pool_time, operation_hours, HOTSPOT
+
+    i = 0
+    with open('taxi_trip.txt', 'w') as output:
+        output.write("Algorithm ran for hub (%s) during (%s) hours with pool time (%d)\n\n"
+                     % (HOTSPOT, operation_hours, pool_time))
+        for taxi in results:
+            i += 1
+            output.write("(%d) %d %d :" % (i, taxi.init_time, taxi.passenger_count))
+            output.write(" LAT/LONG => " + str(zip(taxi.dropOfLat, taxi.dropOfLong)))
+            output.write("\n")
+        output.write("\nTotal number of trips - %d" % (len(results)))
 
 
 def updateResult(taxi):
     global results
     results.append(taxi)
-    #print "Taxi dispatched. init_time =", taxi.init_time, "passenger_lat_long =", (taxi.dropOfLat, taxi.dropOfLong)
 
 
 def assignPassengerToCab(passenger):
     global taxi_list
 
     if len(taxi_list) == 0:
-        taxi = Taxi(passenger.pickUpTime,
-                    passenger.destinationLat,
-                    passenger.destinationLong,
-                    passenger.passenger_count)
+        taxi = spawnCab(passenger)
         taxi_list.append(taxi)
 
     else:
@@ -103,7 +112,7 @@ def assignPassengerToCab(passenger):
 
             # use haversine to calculate the distance
             if (taxi.passenger_count + passenger.passenger_count <= 4
-                and haversine(taxi_latlong, passenger_latlong, miles=True) < 0.1):
+                and haversine(taxi_latlong, passenger_latlong, miles=True) < 3):
                 # Here we are assigning just based on passenger count
                 taxi.passenger_count = taxi.passenger_count + passenger.passenger_count
                 taxi.dropOfLat.append(passenger.destinationLat)
@@ -112,15 +121,16 @@ def assignPassengerToCab(passenger):
                 break
 
         if not assigned:
-            taxi = Taxi(passenger.pickUpTime,
-                    passenger.destinationLat,
-                    passenger.destinationLong,
-                    passenger.passenger_count)
+            taxi = spawnCab(passenger)
             taxi_list.append(taxi)
 
 
-def spawnCab():
-    pass
+def spawnCab(passenger):
+    """ Create a new taxi object and return it """
+    return Taxi(passenger.pickUpTime,
+                passenger.destinationLat,
+                passenger.destinationLong,
+                passenger.passenger_count)
 
 
 if __name__ == "__main__":

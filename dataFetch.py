@@ -11,8 +11,8 @@ def fetchValues(table, operation_hours):
 
   # prepare a cursor object using cursor() method
   cursor = db.cursor()
-  # Prepare SQL query to INSERT a record into the database.
-  sql = "SELECT * FROM `%s` ORDER BY SUBSTR(Pickup_Datetime, -5, 2) ASC LIMIT 9999999999" % (table)
+  # Prepare SQL query to SELECT a record into the database.
+  sql = "SELECT * FROM `%s` ORDER BY SUBSTR(Pickup_Datetime, -5, 2) ASC LIMIT 1000" % (table)
 
   try:
     # Execute the SQL command

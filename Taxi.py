@@ -6,3 +6,4 @@ class Taxi(object):
         self.dropOfLat = [dropOfLat]
         self.dropOfLong = [dropOfLong]
         self.passenger_count = passenger_count
+        self.distance_traveled = 0
