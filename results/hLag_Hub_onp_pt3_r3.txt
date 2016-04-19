@@ -1,0 +1,9 @@
+Algorithm ran for hub (Lag_Hub) during (np) hours with pool time (3)
+
+
+Total number of trips - 9159
+Total number of trips before ride sharing - 13752
+Time before ride share - 21511593
+Time after ride share - 17519875
+Distance before ride share - 128465
+Distance after ride share - 98082

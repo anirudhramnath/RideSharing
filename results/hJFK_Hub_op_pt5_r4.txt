@@ -1,0 +1,9 @@
+Algorithm ran for hub (JFK_Hub) during (p) hours with pool time (5)
+
+
+Total number of trips - 5108
+Total number of trips before ride sharing - 7184
+Time before ride share - 13252994
+Time after ride share - 11991919
+Distance before ride share - 109385
+Distance after ride share - 84739

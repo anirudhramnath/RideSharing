@@ -1,0 +1,9 @@
+Algorithm ran for hub (Penn_Hub) during (n) hours with pool time (7)
+
+
+Total number of trips - 22175
+Total number of trips before ride sharing - 26102
+Time before ride share - 16092181
+Time after ride share - 16074942
+Distance before ride share - 64780
+Distance after ride share - 61006
