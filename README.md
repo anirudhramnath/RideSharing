@@ -33,7 +33,8 @@ windows    `python -m pip install -U pip`
 
 **Running the simulation:**
 
-The simulation takes 5 parameters
+The simulation accepts 5 parameters
+
 1. Hub name (Lag_Hub, Penn_Hub, JFK_Hub)
 2. Operation hours (peak = p, normal = n, non peak = np)
 3. Pool time (It can be any number. example: 7)
