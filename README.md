@@ -30,3 +30,6 @@ windows    `python -m pip install -U pip`
 
 *Haversine*
 `$ pip install haversine`
+
+*MySQL Python Driver*
+`$ pip install MySQL-python`
