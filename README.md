@@ -42,5 +42,7 @@ The simulation accepts 5 parameters
 5. Output file name
 
 *Run hotspotAlgorithm.py*
+
 `$ python hotspotAlgorithm.py Lag_Hub p 7 3 output`
+
 The results will be generated in output.txt
