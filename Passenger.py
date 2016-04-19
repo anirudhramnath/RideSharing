@@ -1,7 +1,8 @@
 #! /usr/bin/env python
 
 class Passenger(object):
-    def __init__(self, pickUpTime, destinationLat, destinationLong, passenger_count):
+    def __init__(self, pickUpTime, destinationLat,
+        destinationLong, passenger_count, distance, time):
 
         hours = int(pickUpTime.split()[1].split(":")[0])
         mins = int(pickUpTime.split()[1].split(":")[1])
@@ -10,3 +11,5 @@ class Passenger(object):
         self.destinationLat = destinationLat
         self.destinationLong = destinationLong
         self.passenger_count = passenger_count
+        self.distance = distance
+        self.time = time

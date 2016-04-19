@@ -18,14 +18,19 @@ passenger_list = [] # type - Passenger object list
 global_time = None # seed the first request's time here
 
 pool_time, operation_hours, HOTSPOT = None, None, None # seed the pool time here
+haversine_distance, op_file = None, None
+
+total_sys_time, total_sys_distance = 0, 0
+original_sys_time, original_sys_distance = 0, 0
 
 results = [] # list of merged taxis
 
 """ --- END Global variables --- """
 
 
-def start(hotspot, operationHours, poolTime):
+def start(hotspot, operationHours, poolTime, haversineDistance, opFile):
     global global_time, passenger_list, taxi_list, pool_time, operation_hours, results, HOTSPOT
+    global haversine_distance, op_file
 
     # Step 1 : Fetch passenger data
     loadValues(hotspot, operation_hours)
@@ -35,6 +40,8 @@ def start(hotspot, operationHours, poolTime):
     pool_time = int(poolTime)
     operation_hours = operationHours
     HOTSPOT = hotspot
+    op_file = opFile
+    haversine_distance = haversineDistance
 
     # Step 3 : Assign users to cabs
     for passenger in passenger_list:
@@ -76,10 +83,11 @@ def checkTimeForEachCab():
 
 
 def summarizeResults():
-    global results, pool_time, operation_hours, HOTSPOT
+    global results, pool_time, operation_hours, HOTSPOT, passenger_list, op_file
+    global total_sys_time, total_sys_distance, original_sys_time, original_sys_distance
 
     i = 0
-    with open('taxi_trip.txt', 'w') as output:
+    with open(op_file+'.txt', 'w') as output:
         output.write("Algorithm ran for hub (%s) during (%s) hours with pool time (%d)\n\n"
                      % (HOTSPOT, operation_hours, pool_time))
         for taxi in results:
@@ -88,15 +96,31 @@ def summarizeResults():
             output.write(" LAT/LONG => " + str(zip(taxi.dropOfLat, taxi.dropOfLong)))
             output.write("\n")
         output.write("\nTotal number of trips - %d" % (len(results)))
+        output.write("\nTotal number of trips before ride sharing - %d" % (len(passenger_list)))
+        output.write("\nTime before ride share - "+str(original_sys_time))
+        output.write("\nTime after ride share - "+str(total_sys_time))
+        output.write("\nDistance before ride share - "+str(original_sys_distance))
+        output.write("\nDistance after ride share - "+str(total_sys_distance))
 
 
 def updateResult(taxi):
-    global results
+    global results, total_sys_time, total_sys_distance, original_sys_time, original_sys_distance
+
+    max_time = max(taxi.time_traveled)
+    min_time = min(taxi.time_traveled)
+    original_sys_time += sum(taxi.time_traveled)
+    total_sys_time += (max_time + (max_time-min_time))
+
+    min_distance = min(taxi.distance_traveled)
+    max_distance = max(taxi.distance_traveled)
+    original_sys_distance += sum(taxi.distance_traveled)
+    total_sys_distance += (max_distance + (max_distance-min_distance))
+
     results.append(taxi)
 
 
 def assignPassengerToCab(passenger):
-    global taxi_list
+    global taxi_list, haversine_distance
 
     if len(taxi_list) == 0:
         taxi = spawnCab(passenger)
@@ -112,11 +136,13 @@ def assignPassengerToCab(passenger):
 
             # use haversine to calculate the distance
             if (taxi.passenger_count + passenger.passenger_count <= 4
-                and haversine(taxi_latlong, passenger_latlong, miles=True) < 3):
+                and haversine(taxi_latlong, passenger_latlong, miles=True) < haversine_distance):
                 # Here we are assigning just based on passenger count
                 taxi.passenger_count = taxi.passenger_count + passenger.passenger_count
                 taxi.dropOfLat.append(passenger.destinationLat)
                 taxi.dropOfLong.append(passenger.destinationLong)
+                taxi.distance_traveled.append(passenger.distance)
+                taxi.time_traveled.append(passenger.time)
                 assigned = True # set the assigned flag
                 break
 
@@ -130,15 +156,20 @@ def spawnCab(passenger):
     return Taxi(passenger.pickUpTime,
                 passenger.destinationLat,
                 passenger.destinationLong,
-                passenger.passenger_count)
+                passenger.passenger_count,
+                passenger.distance,
+                passenger.time)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 4:
-        print "Usage - python hotspotAlgorithm.py <hotspot> <operation_hours = p|n|np> <pool time>"
+    if len(sys.argv) < 6:
+        print "Usage - python hotspotAlgorithm.py <hotspot> <operation_hours = p|n|np> <pool time> <distance deviation> <output file>"
         exit()
+
     hotspot = sys.argv[1]
     operation_hours = sys.argv[2]
     pool_time = sys.argv[3]
+    haversine_distance = int(sys.argv[4])
+    op_file = sys.argv[5]
 
-    start(hotspot, operation_hours, pool_time)
+    start(hotspot, operation_hours, pool_time, haversine_distance, op_file)
